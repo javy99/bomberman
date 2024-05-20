@@ -1,0 +1,75 @@
+# This file is a template, and might need editing before it works on your project.
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+#
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+
+variables:
+  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
+  MAVEN_OPTS: >-
+    -Dhttps.protocols=TLSv1.2
+    -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+    -Dorg.slf4j.simpleLogger.showDateTime=true
+    -Djava.awt.headless=true
+
+  MAVEN_CLI_OPTS: >-
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true
+
+# Define the Docker image used for all jobs unless overridden in the job
+image: maven:3-openjdk-17
+
+# Define the paths that should be cached between pipeline runs
+cache:
+  paths:
+    - .m2/repository  # Maven's local repository where dependencies are stored
+
+# Define the stages used in the pipeline
+stages:
+  - build
+  - test
+  - deploy
+
+# Build job: compiles the code, runs static checks, and generates project reports
+build-job:
+  stage: build  # Assign to 'build' stage
+  script:       # List of commands to execute
+    - mvn spotless:apply  # Apply code formatting to ensure consistent style
+    - mvn compile  # Compile the project's source code
+    - mvn pmd:pmd  # Run PMD to analyze the code for common flaws and issues
+    - mvn verify  # Execute the project's tests and perform additional verification
+
+# Test job: runs unit tests and produces test reports
+unit-test-job:
+  stage: test  # Assign to 'test' stage
+  script:
+    - mvn test  # Execute unit tests
+  artifacts:    # Generate reports from test results
+    reports:
+      junit: target/surefire-reports/TEST-*.xml  # JUnit format is useful for integration in GitLab UI
+
+# Deployment job: deploys the application, requires manual trigger if conditions are met
+deploy-job:
+  stage: deploy
+  script:
+    - mvn install  # This command builds the project and installs the package to the local repository.
+  artifacts:
+    paths:
+      - target/*.jar  # This specifies that all JAR files in the target directory should be saved as artifacts.

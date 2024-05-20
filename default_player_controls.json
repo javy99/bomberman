@@ -1,0 +1,29 @@
+[
+	{
+		"id": "player1",
+		"go_up": 87,
+		"go_left": 65,
+		"go_down": 83,
+		"go_right": 68,
+		"place_bomb": 69,
+		"place_brick": 70
+	},
+	{
+		"id": "player2",
+		"go_up": 38,
+		"go_left": 37,
+		"go_down": 40,
+		"go_right": 39,
+		"place_bomb": 10,
+		"place_brick": 16
+	},
+	{
+		"id": "player3",
+		"go_up": 104,
+		"go_left": 100,
+		"go_down": 101,
+		"go_right": 102,
+		"place_bomb": 103,
+		"place_brick": 105
+	}
+]
